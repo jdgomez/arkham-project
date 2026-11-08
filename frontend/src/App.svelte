@@ -5,6 +5,8 @@
 
   let view = $state<PlayerView>();
   let error = $state<Error>();
+  // One request at a time: the Actions stay disabled until the answer arrives, so a late response never overwrites a newer one.
+  let pending = $state(false);
 
   fetchGame(DemoGameID).then(show, fail);
 
@@ -18,7 +20,10 @@
   }
 
   function act(action: Action) {
-    sendAction(DemoGameID, action).then(show, fail);
+    pending = true;
+    sendAction(DemoGameID, action)
+      .then(show, fail)
+      .finally(() => (pending = false));
   }
 </script>
 
@@ -27,7 +32,7 @@
 {/if}
 {#if view}
   <h1>Turn {view.turn} - {view.phase}</h1>
-  <ActionList actions={view.availableActions} onaction={act} />
+  <ActionList actions={view.availableActions} onaction={act} disabled={pending} />
 {:else if !error}
   <p>Loading...</p>
 {/if}

@@ -1,9 +1,13 @@
 <script lang="ts">
   import type { Action } from './generated/engine';
 
-  let { actions, onaction }: { actions: Action[]; onaction: (action: Action) => void } = $props();
+  let {
+    actions,
+    onaction,
+    disabled = false,
+  }: { actions: Action[]; onaction: (action: Action) => void; disabled?: boolean } = $props();
 </script>
 
 {#each actions as action (action.type)}
-  <button type="button" onclick={() => onaction(action)}>{action.type}</button>
+  <button type="button" {disabled} onclick={() => onaction(action)}>{action.type}</button>
 {/each}

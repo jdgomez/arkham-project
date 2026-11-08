@@ -22,3 +22,14 @@ test('clicking an Action emits it', async () => {
 
   expect(onaction).toHaveBeenCalledExactlyOnceWith({ type: 'End phase' });
 });
+
+test('while disabled, the Actions cannot be clicked', async () => {
+  const onaction = vi.fn();
+  render(ActionList, { actions: [{ type: 'End phase' }], onaction, disabled: true });
+
+  const button = screen.getByRole('button', { name: 'End phase' });
+  await userEvent.click(button);
+
+  expect(button.hasAttribute('disabled')).toBe(true);
+  expect(onaction).not.toHaveBeenCalled();
+});
