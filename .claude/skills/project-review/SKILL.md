@@ -25,6 +25,7 @@ Check the change against each rule. Report only what you can point at (file and 
 
 ## Tests
 
+- **Tests observe behavior at the seams (D17).** Tests only observe behavior at the seams listed in the milestone plan; a test reaching into internals (unexported helpers, private state, mocks of the project's own code) is a finding.
 - **Engine rules (D17):** each rule has table-driven unit tests; behavior spanning several Actions is covered by a seed-based scenario test that plays a scripted sequence of Actions and checks the resulting Game State.
 - **Front end (D17):** few component tests; a milestone's main player paths are covered by Playwright E2E tests before the milestone closes.
 - **Content (D13):** the validation test runs over all of `content/`.
