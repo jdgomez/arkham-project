@@ -9,19 +9,24 @@ import (
 	"net/http"
 
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
+	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
-// Games is where the API finds the games it serves.
+// maxBodyBytes caps a request body: an Action is a few bytes.
+const maxBodyBytes = 1 << 10
+
+// Games is where the API finds the games it serves. Update must be atomic and
+// return games.ErrNotFound for an unknown id.
 type Games interface {
 	Get(id string) (engine.Game, bool)
-	Put(id string, game engine.Game)
+	Update(id string, change func(engine.Game) (engine.Game, error)) (engine.Game, error)
 }
 
 // NewHandler returns the router of the API.
-func NewHandler(games Games) http.Handler {
+func NewHandler(store Games) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /games/{id}", func(w http.ResponseWriter, r *http.Request) {
-		game, ok := games.Get(r.PathValue("id"))
+		game, ok := store.Get(r.PathValue("id"))
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -29,29 +34,30 @@ func NewHandler(games Games) http.Handler {
 		writeJSON(w, engine.ViewOf(game))
 	})
 	mux.HandleFunc("POST /games/{id}/actions", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		game, ok := games.Get(id)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
 		var action engine.Action
-		if err := json.NewDecoder(r.Body).Decode(&action); err != nil {
+		if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodyBytes)).Decode(&action); err != nil {
+			var tooLarge *http.MaxBytesError
+			if errors.As(err, &tooLarge) {
+				http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+				return
+			}
 			http.Error(w, "invalid action", http.StatusBadRequest)
 			return
 		}
-		next, err := engine.Apply(game, action)
-		if errors.Is(err, engine.ErrActionNotAvailable) {
+		next, err := store.Update(r.PathValue("id"), func(game engine.Game) (engine.Game, error) {
+			return engine.Apply(game, action)
+		})
+		switch {
+		case errors.Is(err, games.ErrNotFound):
+			http.NotFound(w, r)
+		case errors.Is(err, engine.ErrActionNotAvailable):
 			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-			return
-		}
-		if err != nil {
+		case err != nil:
 			log.Printf("applying action: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
-			return
+		default:
+			writeJSON(w, engine.ViewOf(next))
 		}
-		games.Put(id, next)
-		writeJSON(w, engine.ViewOf(next))
 	})
 	return mux
 }

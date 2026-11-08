@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
@@ -99,6 +100,38 @@ func TestPostAnActionThatIsNotAvailableIsRejectedAndTheGameIsUnchanged(t *testin
 	decoded := decodeView(t, after)
 	if decoded.Turn != 1 || decoded.Phase != "Upkeep" {
 		t.Errorf("game = turn %d, phase %q; want it unchanged: turn 1, phase \"Upkeep\"", decoded.Turn, decoded.Phase)
+	}
+}
+
+func TestSimultaneousActionsAreAllApplied(t *testing.T) {
+	const clicks = 100 // 20 whole turns of 5 phases
+	server := newServer()
+
+	var wg sync.WaitGroup
+	for range clicks {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			post(server, "/games/demo/actions", `{"type":"End phase"}`)
+		}()
+	}
+	wg.Wait()
+
+	after := httptest.NewRecorder()
+	server.ServeHTTP(after, httptest.NewRequest(http.MethodGet, "/games/demo", nil))
+	decoded := decodeView(t, after)
+	if decoded.Turn != 21 || decoded.Phase != "Upkeep" {
+		t.Errorf("game = turn %d, phase %q; want turn 21, phase \"Upkeep\"", decoded.Turn, decoded.Phase)
+	}
+}
+
+func TestPostWithAnOversizedBodyIsRejected(t *testing.T) {
+	body := `{"type":"` + strings.Repeat("x", 1<<20) + `"}`
+
+	response := post(newServer(), "/games/demo/actions", body)
+
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusRequestEntityTooLarge)
 	}
 }
 

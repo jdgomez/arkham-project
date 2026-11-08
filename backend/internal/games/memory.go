@@ -2,10 +2,14 @@
 package games
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
 )
+
+// ErrNotFound is returned when there is no game with the id.
+var ErrNotFound = errors.New("game not found")
 
 // Memory stores games in memory: they are lost when the server restarts.
 type Memory struct {
@@ -31,4 +35,22 @@ func (m *Memory) Get(id string) (engine.Game, bool) {
 	defer m.mu.RUnlock()
 	game, ok := m.games[id]
 	return game, ok
+}
+
+// Update replaces the game with the id by what change returns, as one atomic
+// step: no other Get or Update sees or interleaves with it. If change fails,
+// the game stays as it was and the error is returned.
+func (m *Memory) Update(id string, change func(engine.Game) (engine.Game, error)) (engine.Game, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	game, ok := m.games[id]
+	if !ok {
+		return engine.Game{}, ErrNotFound
+	}
+	next, err := change(game)
+	if err != nil {
+		return game, err
+	}
+	m.games[id] = next
+	return next, nil
 }
