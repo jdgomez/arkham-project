@@ -2,6 +2,7 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 )
 
@@ -42,16 +43,23 @@ func Apply(game Game, action Action) (Game, error) {
 	if !slices.Contains(AvailableActions(game), action) {
 		return game, ErrActionNotAvailable
 	}
-	return endPhase(game), nil
+	return endPhase(game)
 }
 
 // endPhase moves to the next phase; after Mythos, to Upkeep of the next turn.
-func endPhase(game Game) Game {
-	next := slices.Index(phaseOrder, game.Phase) + 1
+//
+// Rulebook: "Turn Sequence" - the phases follow one another in order, and a
+// new turn begins with Upkeep once Mythos is over.
+func endPhase(game Game) (Game, error) {
+	current := slices.Index(phaseOrder, game.Phase)
+	if current < 0 {
+		return game, fmt.Errorf("ending phase: unknown phase %q", game.Phase)
+	}
+	next := current + 1
 	if next == len(phaseOrder) {
 		game.Turn++
 		next = 0
 	}
 	game.Phase = phaseOrder[next]
-	return game
+	return game, nil
 }

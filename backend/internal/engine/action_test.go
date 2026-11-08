@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
@@ -55,23 +56,59 @@ func TestEndPhaseMovesToTheNextPhase(t *testing.T) {
 }
 
 func TestApplyRejectsAnActionThatIsNotAvailable(t *testing.T) {
-	start := engine.DemoGame()
+	tests := []struct {
+		name   string
+		action engine.Action
+	}{
+		{"an unknown kind of Action", engine.Action{Type: "Dance"}},
+		{"an Action without a type", engine.Action{}},
+		{"the right type in the wrong case", engine.Action{Type: "end phase"}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			start := engine.DemoGame()
 
-	got, err := engine.Apply(start, engine.Action{Type: "Dance"})
+			got, err := engine.Apply(start, test.action)
 
-	if !errors.Is(err, engine.ErrActionNotAvailable) {
-		t.Errorf("error = %v, want ErrActionNotAvailable", err)
+			if !errors.Is(err, engine.ErrActionNotAvailable) {
+				t.Errorf("error = %v, want ErrActionNotAvailable", err)
+			}
+			if got != start {
+				t.Errorf("game = %+v, want it unchanged: %+v", got, start)
+			}
+		})
+	}
+}
+
+func TestApplyFailsOnAPhaseThatDoesNotExist(t *testing.T) {
+	start := engine.Game{Turn: 1, Phase: "Teatime"}
+
+	got, err := engine.Apply(start, engine.Action{Type: "End phase"})
+
+	if err == nil || errors.Is(err, engine.ErrActionNotAvailable) {
+		t.Errorf("error = %v, want an error about the unknown phase", err)
 	}
 	if got != start {
 		t.Errorf("game = %+v, want it unchanged: %+v", got, start)
 	}
 }
 
-func TestTheOnlyAvailableActionOfTheDemoGameIsEndPhase(t *testing.T) {
-	view := engine.ViewOf(engine.DemoGame())
+func TestAvailableActions(t *testing.T) {
+	tests := []struct {
+		name string
+		game engine.Game
+		want []engine.Action
+	}{
+		{"the demo game", engine.DemoGame(), []engine.Action{{Type: "End phase"}}},
+		{"Mythos of a later turn", engine.Game{Turn: 7, Phase: "Mythos"}, []engine.Action{{Type: "End phase"}}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := engine.ViewOf(test.game).AvailableActions
 
-	want := []engine.Action{{Type: "End phase"}}
-	if len(view.AvailableActions) != 1 || view.AvailableActions[0] != want[0] {
-		t.Errorf("available actions = %+v, want %+v", view.AvailableActions, want)
+			if !slices.Equal(got, test.want) {
+				t.Errorf("available actions = %+v, want %+v", got, test.want)
+			}
+		})
 	}
 }
