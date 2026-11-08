@@ -1,0 +1,27 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - revive
+    - mnd
+    - gocognit
+    - funlen
+    - dupl
+  settings:
+    revive:
+      rules:
+        - name: exported
+    gocognit:
+      min-complexity: 15
+    funlen:
+      lines: 60
+      statements: 40
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [mnd, funlen, dupl]
+
+formatters:
+  enable:
+    - gofmt
