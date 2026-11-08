@@ -9,11 +9,11 @@ Check the change against each rule. Report only what you can point at (file and 
 
 ## Architecture
 
-- **The engine is a pure library (D10).** Nothing under `backend/internal/engine` imports HTTP, file, OS, database or YAML packages, or reads the clock or global randomness: it takes a Game State and an Action and returns the new Game State. Randomness comes from the game's seed.
+- **The engine is a pure library (D10).** The engine imports no I/O package (files, OS, network, HTTP, database, YAML), and neither do the project packages it depends on (check `go list -deps ./internal/engine`; what the standard library uses internally, like `os` through `fmt`, does not count). It does not read the clock or global randomness either: it takes a Game State and an Action and returns the new Game State. Randomness comes from the game's seed.
 - **The HTTP layer is a thin adapter (D10, D11).** Handlers decode the request, call the engine and encode the result. No rule logic, no rule-dependent branching in the transport layer.
 - **The API stays action based (D11).** Game state is read with `GET /games/{id}` (state plus Available Actions) and changed only with `POST /games/{id}/actions`. A new endpoint needs a plan decision.
 - **Shared types are generated (D12).** TypeScript types for the Game State, Actions and Available Actions come from the Go structs via `make gen`: no hand-written duplicates in the front end, and generated files are up to date with the Go structs in the same pull request.
-- **Content is data, loaded strictly (D13).** Game content lives in `content/` as YAML, one file per content type; the loader rejects unknown or misspelled fields, and new content types are covered by the content validation test (cross references exist, values in range). No game content hardcoded in Go or TypeScript.
+- **Content is data, loaded strictly (D13).** Game content lives in `content/` as YAML, one file per content type; the content types (`internal/content`, imported by the engine) are separate from the YAML loader (`internal/contentyaml`); the loader rejects unknown or misspelled fields, and new content types are covered by the content validation test (cross references exist, values in range). No game content hardcoded in Go or TypeScript.
 - **Saves are seed plus action log (D14).** A saved game stores the seed, the ordered Actions and the engine version - nothing derived from them.
 - **The front end is a Svelte 5 SPA without SvelteKit (D15).** No SvelteKit, no server-side rendering, no client-side router added without a plan decision.
 
@@ -26,6 +26,7 @@ Check the change against each rule. Report only what you can point at (file and 
 
 ## Tests
 
+- **The red check counts only assertion failures (D17).** For each new test, on the base commit plus compiling stubs for the new symbols, the test fails on its own assertion (`Errorf`/`Fatalf`/expect), never on compilation. The pull request body lists that evidence per test; a test that was only seen failing to build is a finding.
 - **Tests observe behavior at the seams (D17).** Tests only observe behavior at the seams listed in the milestone plan; a test reaching into internals (unexported helpers, private state, mocks of the project's own code) is a finding.
 - **Engine rules (D17):** each rule has table-driven unit tests; behavior spanning several Actions is covered by a seed-based scenario test that plays a scripted sequence of Actions and checks the resulting Game State.
 - **Front end (D17):** few component tests; a milestone's main player paths are covered by Playwright E2E tests before the milestone closes.

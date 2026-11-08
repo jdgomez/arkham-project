@@ -1,4 +1,11 @@
 packages:
+  - path: "github.com/jdgomez/arkham-project/backend/internal/content"
+    output_path: "../frontend/src/generated/content.ts"
+    enum_style: "union"
   - path: "github.com/jdgomez/arkham-project/backend/internal/engine"
     output_path: "../frontend/src/generated/engine.ts"
     enum_style: "union"
+    frontmatter: "import type { Area, AncientOne } from './content';"
+    type_mappings:
+      "content.Area": "Area"
+      "content.AncientOne": "AncientOne"

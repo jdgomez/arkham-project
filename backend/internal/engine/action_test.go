@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"errors"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestEndPhaseMovesToTheNextPhase(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Apply returned error: %v", err)
 			}
-			if got != test.want {
+			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("game = %+v, want %+v", got, test.want)
 			}
 		})
@@ -66,14 +67,14 @@ func TestApplyRejectsAnActionThatIsNotAvailable(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			start := engine.DemoGame()
+			start := demoGame(t)
 
 			got, err := engine.Apply(start, test.action)
 
 			if !errors.Is(err, engine.ErrActionNotAvailable) {
 				t.Errorf("error = %v, want ErrActionNotAvailable", err)
 			}
-			if got != start {
+			if !reflect.DeepEqual(got, start) {
 				t.Errorf("game = %+v, want it unchanged: %+v", got, start)
 			}
 		})
@@ -88,7 +89,7 @@ func TestApplyFailsOnAPhaseThatDoesNotExist(t *testing.T) {
 	if err == nil || errors.Is(err, engine.ErrActionNotAvailable) {
 		t.Errorf("error = %v, want an error about the unknown phase", err)
 	}
-	if got != start {
+	if !reflect.DeepEqual(got, start) {
 		t.Errorf("game = %+v, want it unchanged: %+v", got, start)
 	}
 }
@@ -99,12 +100,12 @@ func TestAvailableActions(t *testing.T) {
 		game engine.Game
 		want []engine.Action
 	}{
-		{"the demo game", engine.DemoGame(), []engine.Action{{Type: "End phase"}}},
+		{"the demo game", demoGame(t), []engine.Action{{Type: "End phase"}}},
 		{"Mythos of a later turn", engine.Game{Turn: 7, Phase: "Mythos"}, []engine.Action{{Type: "End phase"}}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := engine.ViewOf(test.game).AvailableActions
+			got := engine.AvailableActions(test.game)
 
 			if !slices.Equal(got, test.want) {
 				t.Errorf("available actions = %+v, want %+v", got, test.want)

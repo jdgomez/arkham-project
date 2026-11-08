@@ -20,7 +20,16 @@ const (
 // Game is everything that changes during play. Content (the map, cards) is
 // referenced by id and never copied here.
 type Game struct {
-	Seed  int64 `json:"seed"`
-	Turn  int   `json:"turn"`
-	Phase Phase `json:"phase"`
+	Seed          int64               `json:"seed"`
+	Turn          int                 `json:"turn"`
+	Phase         Phase               `json:"phase"`
+	Investigators []InvestigatorState `json:"investigators"`
+	AncientOne    string              `json:"ancientOne"`
+}
+
+// InvestigatorState is what changes about an investigator during play. The
+// investigator's content is referenced by id.
+type InvestigatorState struct {
+	ID       string `json:"id"`
+	Location string `json:"location"`
 }

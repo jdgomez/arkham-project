@@ -1,0 +1,18 @@
+- id: unvisited-isle
+  name: Unvisited Isle
+  connections: [merchant-district-streets]
+- id: river-docks
+  name: River Docks
+  connections: [merchant-district-streets]
+- id: the-unnamable
+  name: The Unnamable
+  connections: [merchant-district-streets]
+- id: administration
+  name: Administration
+  connections: [miskatonic-u-streets]
+- id: library
+  name: Library
+  connections: [miskatonic-u-streets]
+- id: science-building
+  name: Science Building
+  connections: [miskatonic-u-streets]

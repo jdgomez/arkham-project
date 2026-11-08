@@ -1,6 +1,6 @@
 # Milestone A: front/back skeleton and Game State
 
-- **Status:** approved
+- **Status:** done
 - **Mode:** golden slice
 - **Goal:** the player opens the app, sees the demo game (the map of the 2 districts, Mandy Thompson at the Library, Azathoth, turn and phase) and advances it with "End phase" through every phase of a turn, turn after turn.
 
@@ -71,11 +71,11 @@ No test is written outside these seams. `make gen` leaving no diff is a CI check
 - **Class:** behavior
 - **Blocked by:** S2
 - **Acceptance criteria:**
-  - [ ] Given `content/`, when loaded, then 6 locations and 2 streets: each location connected to its district's street, and Merchant District Streets connected to Miskatonic U. Streets (seam: content loading)
-  - [ ] Given a content file with an unknown field, when loaded, then the load fails naming the file and the field (seam: content loading)
-  - [ ] Given a connection to an area that does not exist, then validation fails naming it (seam: content loading)
-  - [ ] Given the demo game, then the player's view includes the board (8 areas and their connections), Mandy Thompson at the Library, and Azathoth as Ancient One (seam: engine)
-  - [ ] Given the app, when the player opens `/`, then they see the 8 areas with their connections, Mandy Thompson at the Library and Azathoth (seam: E2E)
+  - [x] Given `content/`, when loaded, then 6 locations and 2 streets: each location connected to its district's street, and Merchant District Streets connected to Miskatonic U. Streets (seam: content loading)
+  - [x] Given a content file with an unknown field, when loaded, then the load fails naming the file and the field (seam: content loading)
+  - [x] Given a connection to an area that does not exist, then validation fails naming it (seam: content loading)
+  - [x] Given the demo game, then the player's view includes the board (8 areas and their connections), Mandy Thompson at the Library, and Azathoth as Ancient One (seam: engine)
+  - [x] Given the app, when the player opens `/`, then they see the 8 areas with their connections, Mandy Thompson at the Library and Azathoth (seam: E2E)
 
 ## Out of this milestone
 

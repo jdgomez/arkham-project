@@ -1,0 +1,6 @@
+- id: merchant-district-streets
+  name: Merchant District Streets
+  connections: [unvisited-isle, river-docks, the-unnamable, miskatonic-u-streets]
+- id: miskatonic-u-streets
+  name: Miskatonic U. Streets
+  connections: [administration, library, science-building, merchant-district-streets]

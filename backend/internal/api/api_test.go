@@ -4,22 +4,35 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
+	"github.com/jdgomez/arkham-project/backend/internal/contentyaml"
+	"github.com/jdgomez/arkham-project/backend/internal/engine"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
-func newServer() http.Handler {
-	return api.NewHandler(games.NewDemo())
+func newServer(t *testing.T) http.Handler {
+	t.Helper()
+	loaded, err := contentyaml.Load(os.DirFS("../../../content"))
+	if err != nil {
+		t.Fatalf("loading content: %v", err)
+	}
+	store, err := games.NewDemo(loaded)
+	if err != nil {
+		t.Fatalf("setting up the demo game: %v", err)
+	}
+	return api.NewHandler(store, loaded)
 }
 
 func get(t *testing.T, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	response := httptest.NewRecorder()
-	newServer().ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+	newServer(t).ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
 	return response
 }
 
@@ -76,7 +89,7 @@ func post(handler http.Handler, path, body string) *httptest.ResponseRecorder {
 }
 
 func TestPostEndPhaseReturnsTheNewState(t *testing.T) {
-	response := post(newServer(), "/games/demo/actions", `{"type":"End phase"}`)
+	response := post(newServer(t), "/games/demo/actions", `{"type":"End phase"}`)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
@@ -88,7 +101,7 @@ func TestPostEndPhaseReturnsTheNewState(t *testing.T) {
 }
 
 func TestPostAnActionThatIsNotAvailableIsRejectedAndTheGameIsUnchanged(t *testing.T) {
-	server := newServer()
+	server := newServer(t)
 
 	response := post(server, "/games/demo/actions", `{"type":"Dance"}`)
 
@@ -105,7 +118,7 @@ func TestPostAnActionThatIsNotAvailableIsRejectedAndTheGameIsUnchanged(t *testin
 
 func TestSimultaneousActionsAreAllApplied(t *testing.T) {
 	const clicks = 100 // 20 whole turns of 5 phases
-	server := newServer()
+	server := newServer(t)
 
 	var wg sync.WaitGroup
 	for range clicks {
@@ -128,7 +141,7 @@ func TestSimultaneousActionsAreAllApplied(t *testing.T) {
 func TestPostWithAnOversizedBodyIsRejected(t *testing.T) {
 	body := `{"type":"` + strings.Repeat("x", 1<<20) + `"}`
 
-	response := post(newServer(), "/games/demo/actions", body)
+	response := post(newServer(t), "/games/demo/actions", body)
 
 	if response.Code != http.StatusRequestEntityTooLarge {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusRequestEntityTooLarge)
@@ -136,7 +149,7 @@ func TestPostWithAnOversizedBodyIsRejected(t *testing.T) {
 }
 
 func TestPostToAnUnknownGameReturnsNotFound(t *testing.T) {
-	response := post(newServer(), "/games/unknown/actions", `{"type":"End phase"}`)
+	response := post(newServer(t), "/games/unknown/actions", `{"type":"End phase"}`)
 
 	if response.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusNotFound)
@@ -148,5 +161,27 @@ func TestGetUnknownGameReturnsNotFound(t *testing.T) {
 
 	if response.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusNotFound)
+	}
+}
+
+// A game that refers to content that does not exist cannot be shown, so an
+// Action on it fails and must leave the game as it was.
+func TestPostThatCannotComposeTheViewFailsAndTheGameIsUnchanged(t *testing.T) {
+	loaded, err := contentyaml.Load(os.DirFS("../../../content"))
+	if err != nil {
+		t.Fatalf("loading content: %v", err)
+	}
+	broken := engine.Game{Turn: 1, Phase: engine.PhaseUpkeep, AncientOne: "not-in-content"}
+	store := games.NewMemory()
+	store.Put("broken", broken)
+
+	response := post(api.NewHandler(store, loaded), "/games/broken/actions", `{"type":"End phase"}`)
+
+	if response.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusInternalServerError)
+	}
+	after, _ := store.Get("broken")
+	if !reflect.DeepEqual(after, broken) {
+		t.Errorf("game = %+v, want it unchanged: %+v", after, broken)
 	}
 }

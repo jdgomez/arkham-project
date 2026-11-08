@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jdgomez/arkham-project/backend/internal/content"
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
@@ -22,8 +23,9 @@ type Games interface {
 	Update(id string, change func(engine.Game) (engine.Game, error)) (engine.Game, error)
 }
 
-// NewHandler returns the router of the API.
-func NewHandler(store Games) http.Handler {
+// NewHandler returns the router of the API. The content is what the games
+// reference by id.
+func NewHandler(store Games, loaded content.Content) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /games/{id}", func(w http.ResponseWriter, r *http.Request) {
 		game, ok := store.Get(r.PathValue("id"))
@@ -31,7 +33,7 @@ func NewHandler(store Games) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		writeJSON(w, engine.ViewOf(game))
+		writeView(w, loaded, game)
 	})
 	mux.HandleFunc("POST /games/{id}/actions", func(w http.ResponseWriter, r *http.Request) {
 		var action engine.Action
@@ -44,8 +46,14 @@ func NewHandler(store Games) http.Handler {
 			http.Error(w, "invalid action", http.StatusBadRequest)
 			return
 		}
-		next, err := store.Update(r.PathValue("id"), func(game engine.Game) (engine.Game, error) {
-			return engine.Apply(game, action)
+		var view engine.PlayerView
+		_, err := store.Update(r.PathValue("id"), func(game engine.Game) (engine.Game, error) {
+			next, err := engine.Apply(game, action)
+			if err != nil {
+				return game, err
+			}
+			view, err = engine.ViewOf(loaded, next)
+			return next, err
 		})
 		switch {
 		case errors.Is(err, games.ErrNotFound):
@@ -56,10 +64,21 @@ func NewHandler(store Games) http.Handler {
 			log.Printf("applying action: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		default:
-			writeJSON(w, engine.ViewOf(next))
+			writeJSON(w, view)
 		}
 	})
 	return mux
+}
+
+// writeView sends the player's view of the game.
+func writeView(w http.ResponseWriter, loaded content.Content, game engine.Game) {
+	view, err := engine.ViewOf(loaded, game)
+	if err != nil {
+		log.Printf("composing view: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, view)
 }
 
 // writeJSON encodes the whole body before sending anything, so a failure
