@@ -62,8 +62,9 @@ The root `Makefile` holds every routine command, used the same way by the owner,
 ### D7 - Lint and format
 _2026-11-08_
 
-- Back end: `gofmt` + `golangci-lint`.
-- Front end: `eslint` + `prettier` + `svelte-check`.
+- Back end: `gofmt` + `golangci-lint`, with linters that turn D4's mechanical rules into checks: doc comments on exported identifiers, magic numbers, cognitive complexity, function length and duplication (e.g. `revive`, `mnd`, `gocognit`, `funlen`, `dupl`).
+- Front end: `eslint` + `prettier` + `svelte-check`, with the equivalent `eslint` rules (complexity, magic numbers).
+- Configured in the golden slice. What no linter can express is checked by the reviewer through the project review skill (`.claude/skills/project-review/`), which changes in the same pull request as any decision that affects it.
 
 ### D8 - CI on GitHub Actions
 _2026-11-08_
@@ -125,7 +126,7 @@ _2026-11-08_
 ### D17 - TDD and test levels
 _2026-11-08_
 
-- **TDD:** the executor writes tests from the plan's acceptance criteria before the implementation. The reviewer checks that no test was weakened, skipped or deleted without justification.
+- **TDD:** the executor works one acceptance criterion at a time: a test that fails for the right reason, the least code that makes it pass, then refactor while green - never all the tests of a slice first and the code after (`tdd` skill). The reviewer checks that the new tests fail without the change (red check) and that no test was weakened, skipped or deleted without justification.
 - **Engine:** table-driven unit tests per rule, plus seed-based scenario tests that play a scripted sequence of Actions and check the resulting Game State. Scenario tests double as readable rule stories.
 - **Content:** the validation test of D13.
 - **Front end:** few component tests; Playwright E2E tests per milestone for the main player paths.
