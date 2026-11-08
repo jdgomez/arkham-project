@@ -105,7 +105,7 @@ func TestAvailableActions(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := engine.ViewOf(loadContent(t), test.game).AvailableActions
+			got := engine.AvailableActions(test.game)
 
 			if !slices.Equal(got, test.want) {
 				t.Errorf("available actions = %+v, want %+v", got, test.want)

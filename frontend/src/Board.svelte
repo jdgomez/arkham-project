@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Area, InvestigatorView } from './generated/engine';
+  import type { Area } from './generated/content';
+  import type { InvestigatorView } from './generated/engine';
 
   let { board, investigators }: { board: Area[]; investigators: InvestigatorView[] } = $props();
 

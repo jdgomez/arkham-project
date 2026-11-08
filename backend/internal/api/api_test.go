@@ -20,7 +20,11 @@ func newServer(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatalf("loading content: %v", err)
 	}
-	return api.NewHandler(games.NewDemo(loaded), loaded)
+	store, err := games.NewDemo(loaded)
+	if err != nil {
+		t.Fatalf("setting up the demo game: %v", err)
+	}
+	return api.NewHandler(store, loaded)
 }
 
 func get(t *testing.T, path string) *httptest.ResponseRecorder {

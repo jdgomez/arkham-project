@@ -33,7 +33,7 @@ func NewHandler(store Games, loaded content.Content) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		writeJSON(w, engine.ViewOf(loaded, game))
+		writeView(w, loaded, game)
 	})
 	mux.HandleFunc("POST /games/{id}/actions", func(w http.ResponseWriter, r *http.Request) {
 		var action engine.Action
@@ -58,10 +58,21 @@ func NewHandler(store Games, loaded content.Content) http.Handler {
 			log.Printf("applying action: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		default:
-			writeJSON(w, engine.ViewOf(loaded, next))
+			writeView(w, loaded, next)
 		}
 	})
 	return mux
+}
+
+// writeView sends the player's view of the game.
+func writeView(w http.ResponseWriter, loaded content.Content, game engine.Game) {
+	view, err := engine.ViewOf(loaded, game)
+	if err != nil {
+		log.Printf("composing view: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, view)
 }
 
 // writeJSON encodes the whole body before sending anything, so a failure

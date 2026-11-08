@@ -10,7 +10,7 @@ import (
 )
 
 func TestDemoViewShowsTheBoardMandyAndAzathoth(t *testing.T) {
-	view := engine.ViewOf(loadContent(t), demoGame(t))
+	view := viewOf(t, demoGame(t))
 
 	wantBoard := []content.Area{
 		{ID: "unvisited-isle", Name: "Unvisited Isle", Connections: []string{"merchant-district-streets"}},

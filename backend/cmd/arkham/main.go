@@ -21,11 +21,16 @@ func main() {
 
 	loaded, err := contentyaml.Load(os.DirFS(*contentDir))
 	if err != nil {
+		log.Fatalf("loading content from directory %q: %v", *contentDir, err)
+	}
+
+	store, err := games.NewDemo(loaded)
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(games.NewDemo(loaded), loaded)))
+	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(store, loaded)))
 	mux.Handle("/", web.Handler())
 
 	listener, err := net.Listen("tcp", *addr)

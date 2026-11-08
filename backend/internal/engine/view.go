@@ -1,6 +1,10 @@
 package engine
 
-import "github.com/jdgomez/arkham-project/backend/internal/content"
+import (
+	"fmt"
+
+	"github.com/jdgomez/arkham-project/backend/internal/content"
+)
 
 // InvestigatorView is an investigator as the player sees them.
 type InvestigatorView struct {
@@ -21,32 +25,36 @@ type PlayerView struct {
 }
 
 // ViewOf composes the player's view of a game: the content its ids refer to,
-// the game state and the Available Actions.
-func ViewOf(loaded content.Content, game Game) PlayerView {
+// the game state and the Available Actions. It fails if the game refers to
+// content that does not exist.
+func ViewOf(loaded content.Content, game Game) (PlayerView, error) {
+	investigators, err := investigatorsOf(loaded, game)
+	if err != nil {
+		return PlayerView{}, err
+	}
+	ancientOne, ok := loaded.AncientOne(game.AncientOne)
+	if !ok {
+		return PlayerView{}, fmt.Errorf("composing view: Ancient One %q does not exist", game.AncientOne)
+	}
 	return PlayerView{
 		Turn:             game.Turn,
 		Phase:            game.Phase,
 		Board:            loaded.Areas(),
-		Investigators:    investigatorsOf(loaded, game),
-		AncientOne:       ancientOneOf(loaded, game),
+		Investigators:    investigators,
+		AncientOne:       ancientOne,
 		AvailableActions: AvailableActions(game),
-	}
+	}, nil
 }
 
-func investigatorsOf(loaded content.Content, game Game) []InvestigatorView {
+func investigatorsOf(loaded content.Content, game Game) ([]InvestigatorView, error) {
 	investigators := []InvestigatorView{}
 	for _, state := range game.Investigators {
 		investigator, ok := loaded.Investigator(state.ID)
 		if !ok {
-			continue
+			return nil, fmt.Errorf("composing view: investigator %q does not exist", state.ID)
 		}
 		investigators = append(investigators,
 			InvestigatorView{ID: state.ID, Name: investigator.Name, Location: state.Location})
 	}
-	return investigators
-}
-
-func ancientOneOf(loaded content.Content, game Game) content.AncientOne {
-	ancientOne, _ := loaded.AncientOne(game.AncientOne)
-	return ancientOne
+	return investigators, nil
 }

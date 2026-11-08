@@ -81,7 +81,7 @@ Latest stable Go, Node LTS (24, pinned in `.nvmrc`), npm (ships with Node; pnpm 
 ### D10 - Engine as a pure library
 _2026-11-08_
 
-The rules engine (`backend/internal/engine`) knows nothing about HTTP, files or databases: it takes a Game State and an Action and returns the new Game State. The HTTP layer is a thin adapter on top. Rule tests stay simple and fast, rule code reads without noise, and changing the transport does not touch the rules.
+The rules engine (`backend/internal/engine`) knows nothing about HTTP, files, YAML or databases, neither directly nor through what it imports: it takes a Game State and an Action and returns the new Game State. The HTTP layer is a thin adapter on top. Rule tests stay simple and fast, rule code reads without noise, and changing the transport does not touch the rules. Content types live in `backend/internal/content` (pure data, which the engine imports); reading the YAML files is the job of `backend/internal/contentyaml`, which the engine never imports. Check with `go list -deps ./internal/engine`: no HTTP, YAML, database or project loader package (the standard library pulls in `os` through `fmt`, which is not counted).
 
 ### D11 - API: HTTP + JSON, action based
 _2026-11-08_

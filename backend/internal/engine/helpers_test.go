@@ -21,5 +21,18 @@ func loadContent(t *testing.T) content.Content {
 
 func demoGame(t *testing.T) engine.Game {
 	t.Helper()
-	return engine.DemoGame(loadContent(t))
+	game, err := engine.DemoGame(loadContent(t))
+	if err != nil {
+		t.Fatalf("setting up the demo game: %v", err)
+	}
+	return game
+}
+
+func viewOf(t *testing.T, game engine.Game) engine.PlayerView {
+	t.Helper()
+	view, err := engine.ViewOf(loadContent(t), game)
+	if err != nil {
+		t.Fatalf("ViewOf returned error: %v", err)
+	}
+	return view
 }
