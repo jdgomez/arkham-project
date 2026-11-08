@@ -42,14 +42,14 @@ No test is written outside these seams. `make gen` leaving no diff is a CI check
 - **Class:** behavior (includes the project scaffolding: Makefile, Go module, Svelte/Vite app, linters, CI, type generation, embedded build, Playwright)
 - **Blocked by:** none
 - **Acceptance criteria:**
-  - [ ] Given the demo setup, then the game state is turn 1, phase Upkeep, with a fixed seed (seam: engine)
-  - [ ] Given the demo game, when `GET /games/demo`, then 200 with turn 1 and phase "Upkeep" (seam: HTTP API)
-  - [ ] When `GET /games/unknown`, then 404 (seam: HTTP API)
-  - [ ] Given the built binary, when the player opens `/`, then they see "Turn 1 - Upkeep" (seam: E2E)
-  - [ ] `make test`, `make lint`, `make gen`, `make build` and `make dev` work from the repo root (D6, D16)
-  - [ ] The D7 linters are configured for back end and front end
-  - [ ] CI runs tests, lint and a check that `make gen` leaves no diff, on every pull request (D8)
-  - [ ] `.claude/flow.json` matches the Makefile, and its `test_files` matches the real test layout (front-end tests included)
+  - [x] Given the demo setup, then the game state is turn 1, phase Upkeep, with a fixed seed (seam: engine)
+  - [x] Given the demo game, when `GET /games/demo`, then 200 with turn 1 and phase "Upkeep" (seam: HTTP API)
+  - [x] When `GET /games/unknown`, then 404 (seam: HTTP API)
+  - [x] Given the built binary, when the player opens `/`, then they see "Turn 1 - Upkeep" (seam: E2E)
+  - [x] `make test`, `make lint`, `make gen`, `make build` and `make dev` work from the repo root (D6, D16)
+  - [x] The D7 linters are configured for back end and front end
+  - [x] CI runs tests, lint and a check that `make gen` leaves no diff, on every pull request (D8)
+  - [x] `.claude/flow.json` matches the Makefile, and its `test_files` matches the real test layout (front-end tests included)
 
 ### S2: End phase - the player advances phases and turns
 

@@ -1,0 +1,4 @@
+packages:
+  - path: "github.com/jdgomez/arkham-project/backend/internal/engine"
+    output_path: "../frontend/src/generated/engine.ts"
+    enum_style: "union"
