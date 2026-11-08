@@ -1,5 +1,8 @@
 DIST := backend/internal/web/dist
 
+# Dev tools are pinned in their own module so the application's go.mod holds only what it uses.
+TOOL := go tool -modfile=../tools/go.mod
+
 .PHONY: test test-backend lint gen build dev e2e
 
 # Unit and HTTP tests, then the E2E tests against the built binary.
@@ -13,12 +16,12 @@ e2e: build
 	cd frontend && npx playwright test
 
 lint: frontend/node_modules
-	cd backend && go tool golangci-lint run
+	cd backend && $(TOOL) golangci-lint run
 	cd frontend && npm run lint
 
 # Writes frontend/src/generated from the Go structs (D12).
 gen:
-	cd backend && go tool tygo generate
+	cd backend && $(TOOL) tygo generate
 
 # One binary that embeds the built front end. .gitkeep stays so the embed compiles on a clean clone.
 build: frontend/node_modules
@@ -30,7 +33,7 @@ build: frontend/node_modules
 dev: frontend/node_modules
 	cd backend && go build -o ../bin/arkham-dev ./cmd/arkham
 	bin/arkham-dev & server=$$!; \
-	trap 'kill $$server' INT TERM EXIT; \
+	trap 'kill $$server 2>/dev/null' INT TERM EXIT; \
 	cd frontend && npm run dev
 
 frontend/node_modules: frontend/package-lock.json

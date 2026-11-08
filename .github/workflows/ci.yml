@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: tools/go.sum
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*

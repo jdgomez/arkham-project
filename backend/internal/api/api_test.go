@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
-	"github.com/jdgomez/arkham-project/backend/internal/engine"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
@@ -23,7 +22,7 @@ func get(t *testing.T, path string) *httptest.ResponseRecorder {
 }
 
 func TestGetDemoGameReturnsTheTurnAndPhase(t *testing.T) {
-	response := get(t, "/games/"+engine.DemoGameID)
+	response := get(t, "/games/demo")
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
