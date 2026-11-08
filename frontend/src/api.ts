@@ -1,10 +1,27 @@
-import type { PlayerView } from './generated/engine';
+import type { Action, PlayerView } from './generated/engine';
 
 /** Fetches the player's view of a game. Rejects with a readable message when the server does not answer 200. */
 export async function fetchGame(id: string): Promise<PlayerView> {
-  const response = await fetch(`/api/games/${encodeURIComponent(id)}`);
+  const response = await fetch(gameURL(id));
   if (!response.ok) {
     throw new Error(`Could not load game "${id}" (HTTP ${response.status})`);
   }
   return response.json();
+}
+
+/** Sends an Action and returns the new player's view. Rejects with a readable message when the server does not answer 200. */
+export async function sendAction(id: string, action: Action): Promise<PlayerView> {
+  const response = await fetch(`${gameURL(id)}/actions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(action),
+  });
+  if (!response.ok) {
+    throw new Error(`Could not do "${action.type}" (HTTP ${response.status})`);
+  }
+  return response.json();
+}
+
+function gameURL(id: string): string {
+  return `/api/games/${encodeURIComponent(id)}`;
 }

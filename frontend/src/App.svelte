@@ -1,14 +1,33 @@
 <script lang="ts">
-  import { fetchGame } from './api';
-  import { DemoGameID } from './generated/engine';
+  import ActionList from './ActionList.svelte';
+  import { fetchGame, sendAction } from './api';
+  import { DemoGameID, type Action, type PlayerView } from './generated/engine';
 
-  const game = fetchGame(DemoGameID);
+  let view = $state<PlayerView>();
+  let error = $state<Error>();
+
+  fetchGame(DemoGameID).then(show, fail);
+
+  function show(next: PlayerView) {
+    view = next;
+    error = undefined;
+  }
+
+  function fail(cause: Error) {
+    error = cause;
+  }
+
+  function act(action: Action) {
+    sendAction(DemoGameID, action).then(show, fail);
+  }
 </script>
 
-{#await game}
-  <p>Loading...</p>
-{:then view}
-  <h1>Turn {view.turn} - {view.phase}</h1>
-{:catch error}
+{#if error}
   <p role="alert">{error.message}</p>
-{/await}
+{/if}
+{#if view}
+  <h1>Turn {view.turn} - {view.phase}</h1>
+  <ActionList actions={view.availableActions} onaction={act} />
+{:else if !error}
+  <p>Loading...</p>
+{/if}

@@ -3,13 +3,16 @@ DIST := backend/internal/web/dist
 # Dev tools are pinned in their own module so the application's go.mod holds only what it uses.
 TOOL := go tool -modfile=../tools/go.mod
 
-.PHONY: test test-backend lint gen build dev e2e
+.PHONY: test test-backend test-frontend lint gen build dev e2e
 
-# Unit and HTTP tests, then the E2E tests against the built binary.
-test: test-backend e2e
+# Unit, HTTP and component tests, then the E2E tests against the built binary.
+test: test-backend test-frontend e2e
 
 test-backend:
 	cd backend && go test ./...
+
+test-frontend: frontend/node_modules
+	cd frontend && npm test
 
 # The only way to run the E2E tests: it builds first, so they never see a stale binary.
 e2e: build

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('the player opens the app and sees the turn and the phase', async ({ page }) => {
   await page.goto('/');
