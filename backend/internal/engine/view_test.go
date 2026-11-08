@@ -4,13 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jdgomez/arkham-project/backend/internal/content"
+
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
 )
 
 func TestDemoViewShowsTheBoardMandyAndAzathoth(t *testing.T) {
 	view := engine.ViewOf(loadContent(t), demoGame(t))
 
-	wantBoard := []engine.Area{
+	wantBoard := []content.Area{
 		{ID: "unvisited-isle", Name: "Unvisited Isle", Connections: []string{"merchant-district-streets"}},
 		{ID: "river-docks", Name: "River Docks", Connections: []string{"merchant-district-streets"}},
 		{ID: "the-unnamable", Name: "The Unnamable", Connections: []string{"merchant-district-streets"}},
@@ -33,7 +35,7 @@ func TestDemoViewShowsTheBoardMandyAndAzathoth(t *testing.T) {
 	if !reflect.DeepEqual(view.Investigators, wantInvestigators) {
 		t.Errorf("investigators = %+v, want %+v", view.Investigators, wantInvestigators)
 	}
-	wantAncientOne := engine.AncientOneView{ID: "azathoth", Name: "Azathoth"}
+	wantAncientOne := content.AncientOne{ID: "azathoth", Name: "Azathoth"}
 	if view.AncientOne != wantAncientOne {
 		t.Errorf("ancient one = %+v, want %+v", view.AncientOne, wantAncientOne)
 	}

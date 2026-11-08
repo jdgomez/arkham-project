@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
-	"github.com/jdgomez/arkham-project/backend/internal/content"
+	"github.com/jdgomez/arkham-project/backend/internal/contentyaml"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 	"github.com/jdgomez/arkham-project/backend/internal/web"
 )
@@ -19,7 +19,7 @@ func main() {
 	contentDir := flag.String("content", "content", "directory with the game content")
 	flag.Parse()
 
-	loaded, err := content.Load(os.DirFS(*contentDir))
+	loaded, err := contentyaml.Load(os.DirFS(*contentDir))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package content_test
+package contentyaml_test
 
 import (
 	"os"
@@ -8,13 +8,14 @@ import (
 	"testing/fstest"
 
 	"github.com/jdgomez/arkham-project/backend/internal/content"
+	"github.com/jdgomez/arkham-project/backend/internal/contentyaml"
 )
 
 // loadAll loads the real content directory of the repository: the validation
 // test of D13 runs over all of content/.
 func loadAll(t *testing.T) content.Content {
 	t.Helper()
-	loaded, err := content.Load(os.DirFS("../../../content"))
+	loaded, err := contentyaml.Load(os.DirFS("../../../content"))
 	if err != nil {
 		t.Fatalf("Load returned error: %v", err)
 	}
@@ -103,7 +104,7 @@ func validFiles() fstest.MapFS {
 }
 
 func TestLoadAcceptsValidContent(t *testing.T) {
-	if _, err := content.Load(validFiles()); err != nil {
+	if _, err := contentyaml.Load(validFiles()); err != nil {
 		t.Fatalf("Load returned error: %v", err)
 	}
 }
@@ -112,7 +113,7 @@ func TestLoadFailsOnAnUnknownFieldNamingTheFileAndTheField(t *testing.T) {
 	files := validFiles()
 	files["locations.yaml"] = &fstest.MapFile{Data: []byte("- id: library\n  name: Library\n  conections: [streets]\n")}
 
-	_, err := content.Load(files)
+	_, err := contentyaml.Load(files)
 
 	if err == nil {
 		t.Fatal("Load returned no error, want one about the unknown field")
@@ -155,7 +156,7 @@ func TestLoadFailsOnBrokenCrossReferences(t *testing.T) {
 			files := validFiles()
 			files[test.file] = &fstest.MapFile{Data: []byte(test.content)}
 
-			_, err := content.Load(files)
+			_, err := contentyaml.Load(files)
 
 			if err == nil {
 				t.Fatal("Load returned no error, want one about the broken reference")

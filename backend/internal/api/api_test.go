@@ -10,13 +10,13 @@ import (
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
-	"github.com/jdgomez/arkham-project/backend/internal/content"
+	"github.com/jdgomez/arkham-project/backend/internal/contentyaml"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
 func newServer(t *testing.T) http.Handler {
 	t.Helper()
-	loaded, err := content.Load(os.DirFS("../../../content"))
+	loaded, err := contentyaml.Load(os.DirFS("../../../content"))
 	if err != nil {
 		t.Fatalf("loading content: %v", err)
 	}
