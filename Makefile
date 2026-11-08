@@ -1,6 +1,4 @@
-GO_VERSION := $(shell sed -n "s/^go //p" backend/go.mod)
-GOLANGCI_LINT_VERSION := v2.15.0
-GO_LINT := cd backend && GOTOOLCHAIN=go$(GO_VERSION) go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+DIST := backend/internal/web/dist
 
 .PHONY: test test-backend lint gen build dev e2e
 
@@ -10,26 +8,29 @@ test: test-backend e2e
 test-backend:
 	cd backend && go test ./...
 
+# The only way to run the E2E tests: it builds first, so they never see a stale binary.
 e2e: build
 	cd frontend && npx playwright test
 
-lint:
-	$(GO_LINT) run
+lint: frontend/node_modules
+	cd backend && go tool golangci-lint run
 	cd frontend && npm run lint
 
 # Writes frontend/src/generated from the Go structs (D12).
 gen:
 	cd backend && go tool tygo generate
 
-# One binary that embeds the built front end.
+# One binary that embeds the built front end. .gitkeep stays so the embed compiles on a clean clone.
 build: frontend/node_modules
+	find $(DIST) -mindepth 1 ! -name .gitkeep -delete
 	cd frontend && npm run build
 	cd backend && go build -o ../bin/arkham ./cmd/arkham
 
 # Go server on :8080 and Vite dev server proxying /api to it.
 dev: frontend/node_modules
-	cd backend && go run ./cmd/arkham & server=$$!; \
-	trap "kill $$server" EXIT; \
+	cd backend && go build -o ../bin/arkham-dev ./cmd/arkham
+	bin/arkham-dev & server=$$!; \
+	trap 'kill $$server' INT TERM EXIT; \
 	cd frontend && npm run dev
 
 frontend/node_modules: frontend/package-lock.json

@@ -5,8 +5,17 @@ package engine
 // Phase is one step of a turn.
 type Phase string
 
-// Upkeep is the first phase of every turn.
-const Upkeep Phase = "Upkeep"
+// The phases of a turn, in play order.
+//
+// Rulebook: "Turn Sequence" - Upkeep, Movement, Arkham Encounters, Other World
+// Encounters, Mythos.
+const (
+	PhaseUpkeep               Phase = "Upkeep"
+	PhaseMovement             Phase = "Movement"
+	PhaseArkhamEncounters     Phase = "Arkham Encounters"
+	PhaseOtherWorldEncounters Phase = "Other World Encounters"
+	PhaseMythos               Phase = "Mythos"
+)
 
 // Game is everything that changes during play. Content (the map, cards) is
 // referenced by id and never copied here.

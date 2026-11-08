@@ -12,9 +12,7 @@ import (
 )
 
 func newServer() http.Handler {
-	store := games.NewMemory()
-	store.Put("demo", engine.DemoGame())
-	return api.NewHandler(store)
+	return api.NewHandler(games.NewDemo())
 }
 
 func get(t *testing.T, path string) *httptest.ResponseRecorder {
@@ -25,10 +23,13 @@ func get(t *testing.T, path string) *httptest.ResponseRecorder {
 }
 
 func TestGetDemoGameReturnsTheTurnAndPhase(t *testing.T) {
-	response := get(t, "/games/demo")
+	response := get(t, "/games/"+engine.DemoGameID)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
+	}
+	if contentType := response.Header().Get("Content-Type"); contentType != "application/json" {
+		t.Errorf("Content-Type = %q, want %q", contentType, "application/json")
 	}
 	var view struct {
 		Turn  int    `json:"turn"`

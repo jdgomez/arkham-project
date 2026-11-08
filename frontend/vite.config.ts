@@ -5,7 +5,7 @@ const backend = 'http://localhost:8080';
 
 export default defineConfig({
   plugins: [svelte()],
-  build: { outDir: '../backend/internal/web/dist', emptyOutDir: true },
+  build: { outDir: '../backend/internal/web/dist', emptyOutDir: false },
   server: {
     proxy: { '/api': backend },
   },

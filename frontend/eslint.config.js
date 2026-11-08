@@ -9,7 +9,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...svelte.configs.recommended,
   {
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    languageOptions: { globals: globals.browser },
     rules: {
       complexity: ['error', 10],
       'no-magic-numbers': ['error', { ignore: [0, 1, -1], ignoreDefaultValues: true }],
@@ -21,6 +21,7 @@ export default tseslint.config(
   },
   {
     files: ['*.config.{js,ts}', 'e2e/**'],
+    languageOptions: { globals: globals.node },
     rules: { 'no-magic-numbers': 'off' },
   },
 );

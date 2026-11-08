@@ -12,8 +12,8 @@ func TestDemoGameStartsAtTurn1Upkeep(t *testing.T) {
 	if game.Turn != 1 {
 		t.Errorf("turn = %d, want 1", game.Turn)
 	}
-	if game.Phase != engine.Upkeep {
-		t.Errorf("phase = %q, want %q", game.Phase, engine.Upkeep)
+	if game.Phase != engine.PhaseUpkeep {
+		t.Errorf("phase = %q, want %q", game.Phase, engine.PhaseUpkeep)
 	}
 }
 

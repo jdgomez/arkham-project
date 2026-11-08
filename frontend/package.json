@@ -6,8 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . && prettier --check . && svelte-check --tsconfig ./tsconfig.json",
-    "format": "prettier --write .",
-    "e2e": "playwright test"
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

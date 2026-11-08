@@ -3,6 +3,10 @@
 //////////
 // source: setup.go
 
+/**
+ * DemoGameID is the id of the demo game the server starts with.
+ */
+export const DemoGameID = "demo";
 
 //////////
 // source: state.go
@@ -14,11 +18,17 @@ files or databases: it takes a game state and returns a new one.
 /**
  * Phase is one step of a turn.
  */
-export type Phase = string;
+export const PhaseUpkeep = "Upkeep";
+export const PhaseMovement = "Movement";
+export const PhaseArkhamEncounters = "Arkham Encounters";
+export const PhaseOtherWorldEncounters = "Other World Encounters";
+export const PhaseMythos = "Mythos";
 /**
- * Upkeep is the first phase of every turn.
+ * The phases of a turn, in play order.
+ * Rulebook: "Turn Sequence" - Upkeep, Movement, Arkham Encounters, Other World
+ * Encounters, Mythos.
  */
-export const Upkeep: Phase = "Upkeep";
+export type Phase = typeof PhaseUpkeep | typeof PhaseMovement | typeof PhaseArkhamEncounters | typeof PhaseOtherWorldEncounters | typeof PhaseMythos;
 /**
  * Game is everything that changes during play. Content (the map, cards) is
  * referenced by id and never copied here.

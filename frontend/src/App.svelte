@@ -1,8 +1,8 @@
 <script lang="ts">
   import { fetchGame } from './api';
+  import { DemoGameID } from './generated/engine';
 
-  const demoGameId = 'demo';
-  const game = fetchGame(demoGameId);
+  const game = fetchGame(DemoGameID);
 </script>
 
 {#await game}

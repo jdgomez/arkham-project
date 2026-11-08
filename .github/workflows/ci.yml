@@ -28,4 +28,4 @@ jobs:
       - name: make gen leaves no diff
         run: |
           make gen
-          git diff --exit-code
+          test -z "$(git status --porcelain)"
