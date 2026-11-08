@@ -5,6 +5,7 @@ Product scope, phases and glossary: [`SESSION0.md`](SESSION0.md). Project-wide t
 ## Way of working
 
 - **Methodology: TDD** (Test Driven Development). Agent personas: `tdd-executor` / `tdd-reviewer`. Plans are written with the `tdd-plan` skill; no OpenSpec, no no-mistakes (D1, D2).
+- **Language:** everything official is in English - code, comments, docs, commit messages, branch names, and pull request titles, bodies and comments - even when the conversation with the owner is in Spanish.
 - **Base branch:** `main`. Branches and squash titles follow D3 (Conventional Commits, `feat/<slug>`, `fix/<slug>`, ...). The executor opens the pull request; the owner merges with squash.
 - **Routine commands** (D6, from the repo root): `make test`, `make lint`, `make gen`, `make build`, `make dev`.
 - **Review rules** (tdd-reviewer): `.claude/skills/project-review/SKILL.md`, beyond the linters of D7. Update it in the same pull request as any decision that changes what should be reviewed.

@@ -21,6 +21,7 @@ Check the change against each rule. Report only what you can point at (file and 
 
 - **Rule functions cite the rulebook (D4).** A function that implements a game rule has a comment citing the rule it applies, e.g. `// Rulebook: "Movement Phase" - ...`.
 - **Go the readable way (D4).** Small interfaces defined in the package that uses them, not next to the implementation; composition, not type hierarchies; one responsibility per package; no abstraction layer without a second real use or a test that needs it.
+- **Everything official is in English (SESSION0).** Code, comments, docs, commit messages and the pull request title and body. A pull request written in another language is a finding.
 - **No line-by-line comments (D4).** Comments explain why or cite a rule; names explain what.
 
 ## Tests
