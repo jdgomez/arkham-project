@@ -53,6 +53,9 @@ Success, in the long run, means being able to play a full game of AH2e with frie
 | Available Actions | The part of the Game State that lists the decisions that player can legally make right now. The front end only shows them and sends back the choice. |
 | Vertical slice | A version of the game that goes through every layer and phase (front end, back end, engine, Game State, full phase cycle) with a minimal subset of content and only the simplest variant of each mechanic. It validates the architecture before growing in breadth. |
 | MVP adaptation | A rule from the original that is deliberately changed in the MVP because the content is reduced (e.g. the street connections for monster movement). Each one is documented and reverted when the content grows. |
+| Action | A concrete order the player picks from the Available Actions; the back end validates it and applies it to the Game State. |
+| Milestone plan | `docs/plans/<milestone>.md`: the milestone goal, milestone-specific decisions and the task list with acceptance criteria, ticked off by the executor. |
+| Decision record | `docs/architecture.md`: the technical decisions that hold for the whole project, each with its reason and date. |
 
 ## Phases
 
@@ -97,11 +100,13 @@ A minimal login, several players in one game (each controlling their own investi
 Add expansion sets one at a time, starting with the one the owner picks.
 
 ## Constraints and technical decisions
+The full, living decision record (way of working, repo layout, tooling, API, persistence, testing) is [`docs/architecture.md`](docs/architecture.md). The items below are the product-level constraints from the first Session 0 pass.
+
 - **Back end: Go.** Static typing suits a large rules state machine. It compiles to a single dependency-free binary (also for ARM, so it can be deployed on a Raspberry Pi), and has mature HTTP and WebSocket support. TypeScript types for the Game State are generated from the Go structs, so the front end shares the contract.
 - **Front end: TypeScript + Svelte (Vite).** The front end is "render a Game State". A reactive framework handles DOM updates, which would be fragile to hand-write in vanilla TS as panels, modals and dice animations grow. Svelte is the closest to vanilla (plain HTML/CSS/TS components, compiled, small runtime). The owner prefers TypeScript and knows little about frameworks. Svelte was the recommendation and it was accepted.
 - **Strict front/back separation:** the back end owns all rules and legality. The front end renders the Game State and submits one of the Available Actions.
-- **Content as data** (JSON/YAML files loaded by the engine), as a requirement for expansion sets.
-- **Saved games** from Phase 1, with a reproducible seed for all randomness.
+- **Content as data** (YAML files loaded strictly by the engine, see D13), as a requirement for expansion sets.
+- **Saved games** from Phase 1, with a reproducible seed for all randomness (stored as seed + action log, see D14).
 - **Language:** everything official and everything in the repo (code, docs, commits, domain terms) is in English.
 - **Card text source:** Arkham Horror Wiki, plus manual transcription from the physical copy.
 - **No licence:** private, personal use only.
