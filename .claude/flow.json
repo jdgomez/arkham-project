@@ -1,0 +1,6 @@
+{
+  "base": "main",
+  "test": "make test",
+  "lint": "make lint",
+  "test_files": "_test\\.go$|/testdata/|\\.test\\.ts$|\\.spec\\.ts$"
+}
