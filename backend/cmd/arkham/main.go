@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
@@ -19,6 +20,11 @@ func main() {
 	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(games.NewDemo())))
 	mux.Handle("/", web.Handler())
 
-	log.Printf("listening on %s", *addr)
-	log.Fatal(http.ListenAndServe(*addr, mux))
+	listener, err := net.Listen("tcp", *addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// With ":0" the system picks the port, so the log line is how callers learn it.
+	log.Printf("listening on %s", listener.Addr())
+	log.Fatal(http.Serve(listener, mux))
 }

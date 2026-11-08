@@ -57,13 +57,13 @@ No test is written outside these seams. `make gen` leaving no diff is a CI check
 - **Class:** behavior
 - **Blocked by:** S1
 - **Acceptance criteria:**
-  - [ ] Given each phase, when "End phase" is applied, then: Upkeep -> Movement, Movement -> Arkham Encounters, Arkham Encounters -> Other World Encounters, Other World Encounters -> Mythos, Mythos -> Upkeep with turn + 1 (seam: engine)
-  - [ ] Given the demo game, then the only Available Action is "End phase" (seam: engine)
-  - [ ] Given the demo game, when "End phase" is applied 5 times, then turn 2, Upkeep; 10 times, then turn 3, Upkeep (seam: engine, scenario)
-  - [ ] When `POST /games/demo/actions` with "End phase", then 200 with turn 1, phase Movement (seam: HTTP API)
-  - [ ] When `POST` an Action that is not in the Available Actions, then 4xx and the game state is unchanged (seam: HTTP API)
-  - [ ] Given a list of Available Actions, the component renders one button per Action, and clicking one emits that Action (seam: component)
-  - [ ] Given the app, when the player clicks "End phase", then they see "Turn 1 - Movement"; after 4 more clicks, "Turn 2 - Upkeep" (seam: E2E)
+  - [x] Given each phase, when "End phase" is applied, then: Upkeep -> Movement, Movement -> Arkham Encounters, Arkham Encounters -> Other World Encounters, Other World Encounters -> Mythos, Mythos -> Upkeep with turn + 1 (seam: engine)
+  - [x] Given the demo game, then the only Available Action is "End phase" (seam: engine)
+  - [x] Given the demo game, when "End phase" is applied 5 times, then turn 2, Upkeep; 10 times, then turn 3, Upkeep (seam: engine, scenario)
+  - [x] When `POST /games/demo/actions` with "End phase", then 200 with turn 1, phase Movement (seam: HTTP API)
+  - [x] When `POST` an Action that is not in the Available Actions, then 4xx and the game state is unchanged (seam: HTTP API)
+  - [x] Given a list of Available Actions, the component renders one button per Action, and clicking one emits that Action (seam: component)
+  - [x] Given the app, when the player clicks "End phase", then they see "Turn 1 - Movement"; after 4 more clicks, "Turn 2 - Upkeep" (seam: E2E)
 
 ### S3: The map from content
 
