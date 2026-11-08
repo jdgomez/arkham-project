@@ -74,7 +74,7 @@ A simple workflow runs tests, lint and content validation on every PR. It is a c
 ### D9 - Versions and package manager
 _2026-11-08_
 
-Latest stable Go, Node LTS, npm (ships with Node; pnpm only pays off in repos with many front-end packages).
+Latest stable Go, Node LTS (24, pinned in `.nvmrc`), npm (ships with Node; pnpm only pays off in repos with many front-end packages).
 
 ## Back end
 
