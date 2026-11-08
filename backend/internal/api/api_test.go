@@ -4,22 +4,29 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
+	"github.com/jdgomez/arkham-project/backend/internal/content"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
-func newServer() http.Handler {
-	return api.NewHandler(games.NewDemo())
+func newServer(t *testing.T) http.Handler {
+	t.Helper()
+	loaded, err := content.Load(os.DirFS("../../../content"))
+	if err != nil {
+		t.Fatalf("loading content: %v", err)
+	}
+	return api.NewHandler(games.NewDemo(loaded), loaded)
 }
 
 func get(t *testing.T, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	response := httptest.NewRecorder()
-	newServer().ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+	newServer(t).ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
 	return response
 }
 
@@ -76,7 +83,7 @@ func post(handler http.Handler, path, body string) *httptest.ResponseRecorder {
 }
 
 func TestPostEndPhaseReturnsTheNewState(t *testing.T) {
-	response := post(newServer(), "/games/demo/actions", `{"type":"End phase"}`)
+	response := post(newServer(t), "/games/demo/actions", `{"type":"End phase"}`)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
@@ -88,7 +95,7 @@ func TestPostEndPhaseReturnsTheNewState(t *testing.T) {
 }
 
 func TestPostAnActionThatIsNotAvailableIsRejectedAndTheGameIsUnchanged(t *testing.T) {
-	server := newServer()
+	server := newServer(t)
 
 	response := post(server, "/games/demo/actions", `{"type":"Dance"}`)
 
@@ -105,7 +112,7 @@ func TestPostAnActionThatIsNotAvailableIsRejectedAndTheGameIsUnchanged(t *testin
 
 func TestSimultaneousActionsAreAllApplied(t *testing.T) {
 	const clicks = 100 // 20 whole turns of 5 phases
-	server := newServer()
+	server := newServer(t)
 
 	var wg sync.WaitGroup
 	for range clicks {
@@ -128,7 +135,7 @@ func TestSimultaneousActionsAreAllApplied(t *testing.T) {
 func TestPostWithAnOversizedBodyIsRejected(t *testing.T) {
 	body := `{"type":"` + strings.Repeat("x", 1<<20) + `"}`
 
-	response := post(newServer(), "/games/demo/actions", body)
+	response := post(newServer(t), "/games/demo/actions", body)
 
 	if response.Code != http.StatusRequestEntityTooLarge {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusRequestEntityTooLarge)
@@ -136,7 +143,7 @@ func TestPostWithAnOversizedBodyIsRejected(t *testing.T) {
 }
 
 func TestPostToAnUnknownGameReturnsNotFound(t *testing.T) {
-	response := post(newServer(), "/games/unknown/actions", `{"type":"End phase"}`)
+	response := post(newServer(t), "/games/unknown/actions", `{"type":"End phase"}`)
 
 	if response.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusNotFound)

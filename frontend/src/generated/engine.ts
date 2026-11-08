@@ -56,11 +56,44 @@ export interface Game {
   seed: number /* int64 */;
   turn: number /* int */;
   phase: Phase;
+  investigators: InvestigatorState[];
+  ancientOne: string;
+}
+/**
+ * InvestigatorState is what changes about an investigator during play. The
+ * investigator's content is referenced by id.
+ */
+export interface InvestigatorState {
+  id: string;
+  location: string;
 }
 
 //////////
 // source: view.go
 
+/**
+ * Area is a place on the board with the areas it connects to.
+ */
+export interface Area {
+  id: string;
+  name: string;
+  connections: string[];
+}
+/**
+ * InvestigatorView is an investigator as the player sees them.
+ */
+export interface InvestigatorView {
+  id: string;
+  name: string;
+  location: string;
+}
+/**
+ * AncientOneView is the Ancient One as the player sees it.
+ */
+export interface AncientOneView {
+  id: string;
+  name: string;
+}
 /**
  * PlayerView is what the player sees of a game. It leaves out what they must
  * not see, such as the seed.
@@ -68,5 +101,8 @@ export interface Game {
 export interface PlayerView {
   turn: number /* int */;
   phase: Phase;
+  board: Area[];
+  investigators: InvestigatorView[];
+  ancientOne: AncientOneView;
   availableActions: Action[];
 }

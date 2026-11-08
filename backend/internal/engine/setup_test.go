@@ -7,7 +7,7 @@ import (
 )
 
 func TestDemoGameStartsAtTurn1Upkeep(t *testing.T) {
-	game := engine.DemoGame()
+	game := demoGame(t)
 
 	if game.Turn != 1 {
 		t.Errorf("turn = %d, want 1", game.Turn)
@@ -18,8 +18,8 @@ func TestDemoGameStartsAtTurn1Upkeep(t *testing.T) {
 }
 
 func TestDemoGameHasAFixedSeed(t *testing.T) {
-	first := engine.DemoGame()
-	second := engine.DemoGame()
+	first := demoGame(t)
+	second := demoGame(t)
 
 	if first.Seed == 0 {
 		t.Error("seed is zero, want a fixed non-zero seed")

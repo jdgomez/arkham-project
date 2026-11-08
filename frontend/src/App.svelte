@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Board from './Board.svelte';
   import ActionList from './ActionList.svelte';
   import { fetchGame, sendAction } from './api';
   import { DemoGameID, type Action, type PlayerView } from './generated/engine';
@@ -32,6 +33,8 @@
 {/if}
 {#if view}
   <h1>Turn {view.turn} - {view.phase}</h1>
+  <p>Ancient One: {view.ancientOne.name}</p>
+  <Board board={view.board} investigators={view.investigators} />
   <ActionList actions={view.availableActions} onaction={act} disabled={pending} />
 {:else if !error}
   <p>Loading...</p>

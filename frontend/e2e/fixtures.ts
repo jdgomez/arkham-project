@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 
 const binary = fileURLToPath(new URL('../../bin/arkham', import.meta.url));
+const contentDir = fileURLToPath(new URL('../../content', import.meta.url));
 
 // The demo game lives in the server's memory, so each test gets its own server
 // (the binary produced by `make build`) and always starts from turn 1, Upkeep.
@@ -11,7 +12,7 @@ export const test = base.extend<{ baseURL: string }>({
   // Playwright requires the fixtures argument to be an object pattern, even when empty.
   // eslint-disable-next-line no-empty-pattern
   baseURL: async ({}, use) => {
-    const server = spawn(binary, ['-addr', '127.0.0.1:0'], {
+    const server = spawn(binary, ['-addr', '127.0.0.1:0', '-content', contentDir], {
       stdio: ['ignore', 'inherit', 'pipe'],
     });
     try {

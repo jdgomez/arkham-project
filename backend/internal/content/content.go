@@ -43,13 +43,16 @@ type Content struct {
 // Unknown fields are errors.
 func Load(files fs.FS) (Content, error) {
 	var content Content
-	for file, target := range map[string]any{
-		"locations.yaml":     &content.Locations,
-		"streets.yaml":       &content.Streets,
-		"investigators.yaml": &content.Investigators,
-		"ancient-ones.yaml":  &content.AncientOnes,
+	for _, file := range []struct {
+		name   string
+		target any
+	}{
+		{"locations.yaml", &content.Locations},
+		{"streets.yaml", &content.Streets},
+		{"investigators.yaml", &content.Investigators},
+		{"ancient-ones.yaml", &content.AncientOnes},
 	} {
-		if err := decodeFile(files, file, target); err != nil {
+		if err := decodeFile(files, file.name, file.target); err != nil {
 			return Content{}, err
 		}
 	}

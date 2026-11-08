@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jdgomez/arkham-project/backend/internal/content"
 	"github.com/jdgomez/arkham-project/backend/internal/engine"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
@@ -22,8 +23,9 @@ type Games interface {
 	Update(id string, change func(engine.Game) (engine.Game, error)) (engine.Game, error)
 }
 
-// NewHandler returns the router of the API.
-func NewHandler(store Games) http.Handler {
+// NewHandler returns the router of the API. The content is what the games
+// reference by id.
+func NewHandler(store Games, loaded content.Content) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /games/{id}", func(w http.ResponseWriter, r *http.Request) {
 		game, ok := store.Get(r.PathValue("id"))
@@ -31,7 +33,7 @@ func NewHandler(store Games) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		writeJSON(w, engine.ViewOf(game))
+		writeJSON(w, engine.ViewOf(loaded, game))
 	})
 	mux.HandleFunc("POST /games/{id}/actions", func(w http.ResponseWriter, r *http.Request) {
 		var action engine.Action
@@ -56,7 +58,7 @@ func NewHandler(store Games) http.Handler {
 			log.Printf("applying action: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		default:
-			writeJSON(w, engine.ViewOf(next))
+			writeJSON(w, engine.ViewOf(loaded, next))
 		}
 	})
 	return mux

@@ -9,7 +9,7 @@ import (
 // play applies the Actions in order, starting from the demo game.
 func play(t *testing.T, actions ...engine.Action) engine.Game {
 	t.Helper()
-	game := engine.DemoGame()
+	game := demoGame(t)
 	for i, action := range actions {
 		var err error
 		game, err = engine.Apply(game, action)
