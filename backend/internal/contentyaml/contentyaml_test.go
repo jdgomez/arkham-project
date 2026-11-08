@@ -189,14 +189,7 @@ func TestLoadFailsOnAFileWithNoEntries(t *testing.T) {
 
 				_, err := contentyaml.Load(files)
 
-				if err == nil {
-					t.Fatal("Load returned no error, want one about the missing entries")
-				}
-				for _, want := range []string{file, "no entries"} {
-					if !strings.Contains(err.Error(), want) {
-						t.Errorf("error = %q, want it to name %q", err, want)
-					}
-				}
+				assertErrorMentions(t, err, file, "no entries")
 			})
 		}
 	}
@@ -210,14 +203,19 @@ func TestLoadFailsOnMoreThanOneDocument(t *testing.T) {
 
 			_, err := contentyaml.Load(files)
 
-			if err == nil {
-				t.Fatal("Load returned no error, want one about the extra document")
-			}
-			for _, want := range []string{file, "more than one document"} {
-				if !strings.Contains(err.Error(), want) {
-					t.Errorf("error = %q, want it to name %q", err, want)
-				}
-			}
+			assertErrorMentions(t, err, file, "more than one document")
 		})
+	}
+}
+
+func assertErrorMentions(t *testing.T, err error, wants ...string) {
+	t.Helper()
+	if err == nil {
+		t.Fatalf("Load returned no error, want one mentioning %q", wants)
+	}
+	for _, want := range wants {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("error = %q, want it to mention %q", err, want)
+		}
 	}
 }
