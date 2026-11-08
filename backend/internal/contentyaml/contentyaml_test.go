@@ -169,3 +169,55 @@ func TestLoadFailsOnBrokenCrossReferences(t *testing.T) {
 		})
 	}
 }
+
+var contentFiles = []string{"locations.yaml", "streets.yaml", "investigators.yaml", "ancient-ones.yaml"}
+
+func TestLoadFailsOnAFileWithNoEntries(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+	}{
+		{"an empty file", ""},
+		{"only a comment", "# nothing here yet\n"},
+		{"an empty list", "[]\n"},
+	}
+	for _, file := range contentFiles {
+		for _, test := range tests {
+			t.Run(file+" with "+test.name, func(t *testing.T) {
+				files := validFiles()
+				files[file] = &fstest.MapFile{Data: []byte(test.data)}
+
+				_, err := contentyaml.Load(files)
+
+				if err == nil {
+					t.Fatal("Load returned no error, want one about the missing entries")
+				}
+				for _, want := range []string{file, "no entries"} {
+					if !strings.Contains(err.Error(), want) {
+						t.Errorf("error = %q, want it to name %q", err, want)
+					}
+				}
+			})
+		}
+	}
+}
+
+func TestLoadFailsOnMoreThanOneDocument(t *testing.T) {
+	for _, file := range contentFiles {
+		t.Run(file, func(t *testing.T) {
+			files := validFiles()
+			files[file] = &fstest.MapFile{Data: slices.Concat(files[file].Data, []byte("---\n"), files[file].Data)}
+
+			_, err := contentyaml.Load(files)
+
+			if err == nil {
+				t.Fatal("Load returned no error, want one about the extra document")
+			}
+			for _, want := range []string{file, "more than one document"} {
+				if !strings.Contains(err.Error(), want) {
+					t.Errorf("error = %q, want it to name %q", err, want)
+				}
+			}
+		})
+	}
+}

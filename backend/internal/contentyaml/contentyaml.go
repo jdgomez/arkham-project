@@ -4,7 +4,9 @@ package contentyaml
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 
 	"gopkg.in/yaml.v3"
@@ -13,38 +15,44 @@ import (
 )
 
 // Load reads and validates all the content files in the file system. Unknown
-// fields are errors.
+// fields, empty files and files with more than one YAML document are errors.
 func Load(files fs.FS) (content.Content, error) {
-	var (
-		locations, streets []content.Area
-		investigators      []content.Investigator
-		ancientOnes        []content.AncientOne
-	)
-	for _, file := range []struct {
-		name   string
-		target any
-	}{
-		{"locations.yaml", &locations},
-		{"streets.yaml", &streets},
-		{"investigators.yaml", &investigators},
-		{"ancient-ones.yaml", &ancientOnes},
-	} {
-		if err := decodeFile(files, file.name, file.target); err != nil {
-			return content.Content{}, err
-		}
+	locations, err := decodeFile[content.Area](files, "locations.yaml")
+	if err != nil {
+		return content.Content{}, err
+	}
+	streets, err := decodeFile[content.Area](files, "streets.yaml")
+	if err != nil {
+		return content.Content{}, err
+	}
+	investigators, err := decodeFile[content.Investigator](files, "investigators.yaml")
+	if err != nil {
+		return content.Content{}, err
+	}
+	ancientOnes, err := decodeFile[content.AncientOne](files, "ancient-ones.yaml")
+	if err != nil {
+		return content.Content{}, err
 	}
 	return content.New(locations, streets, investigators, ancientOnes)
 }
 
-func decodeFile(files fs.FS, name string, target any) error {
+// decodeFile reads the one YAML document of the file: a non-empty list.
+func decodeFile[T any](files fs.FS, name string) ([]T, error) {
 	data, err := fs.ReadFile(files, name)
 	if err != nil {
-		return fmt.Errorf("reading content: %w", err)
+		return nil, fmt.Errorf("reading content: %w", err)
 	}
 	decoder := yaml.NewDecoder(bytes.NewReader(data))
 	decoder.KnownFields(true)
-	if err := decoder.Decode(target); err != nil {
-		return fmt.Errorf("%s: %w", name, err)
+	var entries []T
+	if err := decoder.Decode(&entries); err != nil && !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("%s: %w", name, err)
 	}
-	return nil
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("%s: no entries", name)
+	}
+	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("%s: more than one document", name)
+	}
+	return entries, nil
 }
