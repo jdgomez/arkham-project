@@ -59,9 +59,14 @@ func New(locations, streets []Area, investigators []Investigator, ancientOnes []
 	return content, nil
 }
 
-// Areas lists the locations and then the streets: the whole board.
+// Areas lists the locations and then the streets: the whole board. The caller
+// gets a copy, so it cannot change the content.
 func (c Content) Areas() []Area {
-	return c.areas
+	areas := slices.Clone(c.areas)
+	for i := range areas {
+		areas[i].Connections = slices.Clone(areas[i].Connections)
+	}
+	return areas
 }
 
 // Investigator returns the investigator with the id, and whether it exists.

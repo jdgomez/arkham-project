@@ -106,3 +106,16 @@ func TestNewFailsOnInvalidContent(t *testing.T) {
 		})
 	}
 }
+
+func TestAreasReturnsACopy(t *testing.T) {
+	loaded, err := validParts().build()
+	if err != nil {
+		t.Fatalf("New returned error: %v", err)
+	}
+
+	loaded.Areas()[0].ID = "tampered"
+
+	if got := loaded.Areas()[0].ID; got != "library" {
+		t.Errorf("first area = %q after the caller changed the returned slice, want %q", got, "library")
+	}
+}

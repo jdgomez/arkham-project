@@ -51,8 +51,11 @@ func decodeFile[T any](files fs.FS, name string) ([]T, error) {
 	if len(entries) == 0 {
 		return nil, fmt.Errorf("%s: no entries", name)
 	}
-	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) {
+	switch err := decoder.Decode(new(any)); {
+	case err == nil:
 		return nil, fmt.Errorf("%s: more than one document", name)
+	case !errors.Is(err, io.EOF):
+		return nil, fmt.Errorf("%s: %w", name, err)
 	}
 	return entries, nil
 }

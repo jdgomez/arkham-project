@@ -219,3 +219,20 @@ func assertErrorMentions(t *testing.T, err error, wants ...string) {
 		}
 	}
 }
+
+func TestLoadReportsTheSyntaxErrorOfAnExtraDocument(t *testing.T) {
+	files := validFiles()
+	files["locations.yaml"] = &fstest.MapFile{Data: slices.Concat(files["locations.yaml"].Data, []byte("---\n- id: [broken\n"))}
+
+	_, err := contentyaml.Load(files)
+
+	if err == nil {
+		t.Fatal("Load returned no error, want the syntax error of the second document")
+	}
+	if !strings.Contains(err.Error(), "locations.yaml") {
+		t.Errorf("error = %q, want it to name locations.yaml", err)
+	}
+	if strings.Contains(err.Error(), "more than one document") {
+		t.Errorf("error = %q, want the real syntax error, not %q", err, "more than one document")
+	}
+}

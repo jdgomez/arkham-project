@@ -46,8 +46,14 @@ func NewHandler(store Games, loaded content.Content) http.Handler {
 			http.Error(w, "invalid action", http.StatusBadRequest)
 			return
 		}
-		next, err := store.Update(r.PathValue("id"), func(game engine.Game) (engine.Game, error) {
-			return engine.Apply(game, action)
+		var view engine.PlayerView
+		_, err := store.Update(r.PathValue("id"), func(game engine.Game) (engine.Game, error) {
+			next, err := engine.Apply(game, action)
+			if err != nil {
+				return game, err
+			}
+			view, err = engine.ViewOf(loaded, next)
+			return next, err
 		})
 		switch {
 		case errors.Is(err, games.ErrNotFound):
@@ -58,7 +64,7 @@ func NewHandler(store Games, loaded content.Content) http.Handler {
 			log.Printf("applying action: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		default:
-			writeView(w, loaded, next)
+			writeJSON(w, view)
 		}
 	})
 	return mux

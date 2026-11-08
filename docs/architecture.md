@@ -81,7 +81,7 @@ Latest stable Go, Node LTS (24, pinned in `.nvmrc`), npm (ships with Node; pnpm 
 ### D10 - Engine as a pure library
 _2026-11-08_
 
-The rules engine (`backend/internal/engine`) knows nothing about HTTP, files, YAML or databases, neither directly nor through what it imports: it takes a Game State and an Action and returns the new Game State. The HTTP layer is a thin adapter on top. Rule tests stay simple and fast, rule code reads without noise, and changing the transport does not touch the rules. Content types live in `backend/internal/content` (pure data, which the engine imports); reading the YAML files is the job of `backend/internal/contentyaml`, which the engine never imports. Check with `go list -deps ./internal/engine`: no HTTP, YAML, database or project loader package (the standard library pulls in `os` through `fmt`, which is not counted).
+The rules engine (`backend/internal/engine`) imports no I/O package (files, OS, network, HTTP, database, YAML), and neither do the project packages it depends on: it takes a Game State and an Action and returns the new Game State. What the standard library uses internally (`os` through `fmt`) does not count. The HTTP layer is a thin adapter on top. Rule tests stay simple and fast, rule code reads without noise, and changing the transport does not touch the rules. Content types live in `backend/internal/content` (pure data, which the engine imports); reading the YAML files is the job of `backend/internal/contentyaml`, which the engine never imports. Check the imports of the engine and of the project packages it depends on (`go list -deps ./internal/engine`).
 
 ### D11 - API: HTTP + JSON, action based
 _2026-11-08_
@@ -126,7 +126,7 @@ _2026-11-08_
 ### D17 - TDD and test levels
 _2026-11-08_
 
-- **TDD:** the executor works one acceptance criterion at a time: a test that fails for the right reason, the least code that makes it pass, then refactor while green - never all the tests of a slice first and the code after (`tdd` skill). The reviewer checks that the new tests fail without the change (red check) and that no test was weakened, skipped or deleted without justification.
+- **TDD:** the executor works one acceptance criterion at a time: a test that fails for the right reason, the least code that makes it pass, then refactor while green - never all the tests of a slice first and the code after (`tdd` skill). The reviewer checks that the new tests fail without the change (red check) and that no test was weakened, skipped or deleted without justification. The red check counts only assertion failures: a test that introduces new symbols starts from compiling stubs, so a build failure is never accepted as red.
 - **Engine:** table-driven unit tests per rule, plus seed-based scenario tests that play a scripted sequence of Actions and check the resulting Game State. Scenario tests double as readable rule stories.
 - **Content:** the validation test of D13.
 - **Front end:** few component tests; Playwright E2E tests per milestone for the main player paths.

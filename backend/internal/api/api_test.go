@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/jdgomez/arkham-project/backend/internal/api"
 	"github.com/jdgomez/arkham-project/backend/internal/contentyaml"
+	"github.com/jdgomez/arkham-project/backend/internal/engine"
 	"github.com/jdgomez/arkham-project/backend/internal/games"
 )
 
@@ -159,5 +161,27 @@ func TestGetUnknownGameReturnsNotFound(t *testing.T) {
 
 	if response.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusNotFound)
+	}
+}
+
+// A game that refers to content that does not exist cannot be shown, so an
+// Action on it fails and must leave the game as it was.
+func TestPostThatCannotComposeTheViewFailsAndTheGameIsUnchanged(t *testing.T) {
+	loaded, err := contentyaml.Load(os.DirFS("../../../content"))
+	if err != nil {
+		t.Fatalf("loading content: %v", err)
+	}
+	broken := engine.Game{Turn: 1, Phase: engine.PhaseUpkeep, AncientOne: "not-in-content"}
+	store := games.NewMemory()
+	store.Put("broken", broken)
+
+	response := post(api.NewHandler(store, loaded), "/games/broken/actions", `{"type":"End phase"}`)
+
+	if response.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusInternalServerError)
+	}
+	after, _ := store.Get("broken")
+	if !reflect.DeepEqual(after, broken) {
+		t.Errorf("game = %+v, want it unchanged: %+v", after, broken)
 	}
 }
