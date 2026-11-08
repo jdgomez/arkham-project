@@ -101,6 +101,8 @@ _2026-11-08_
 
 Game content lives in `content/` as YAML, one file per content type, loaded by the back end at start-up. YAML reads better for long card texts in PR diffs. Strictness comes from the loader: unknown or misspelled fields are errors, and a validation test over all of `content/` (cross references exist, values in range) runs on every PR.
 
+Content ids are human-readable slugs (e.g. `library`, `miskatonic-u-streets`), unique per content type and stable once used. Content is hand-written and reviewed in diffs, so references must read on their own; a misspelled slug fails validation while a wrong number would silently point at another item; expansion sets add ids without a global sequence; saves and the action log (D14) stay readable and do not depend on file order. Entities created at runtime (games, and users in Phase 4) get generated ids (UUIDs) when they arrive.
+
 ### D14 - Saved games as seed + action log
 _2026-11-08_
 
